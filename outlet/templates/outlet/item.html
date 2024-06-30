@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title  %}
+    {{ name }}
+{% endblock  %}
+
+{% block content  %}
+    <h1>{{ name }}</h1>
+    <h2>{{ category }}</h2>
+    <h3>{{ price }}</h3>
+    <p>{{ description }}</p>
+    {% if available %}
+    <p>There are {{ stock }} items currently in stock.</p>
+    {% else %}
+    <p> This item is currently unavailable </p>
+    {% endif %}
+{% endblock  %}

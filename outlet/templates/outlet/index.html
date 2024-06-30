@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title  %}
+    Store - All Items
+{% endblock  %}
+
+{% block styles %}
+{% endblock %}
+
+{% block content%}
+    <ul>
+      {% for item in items  %}
+      <li>
+        <!--
+          <a href="{% url "item" item.id %}">{{item.name}}</a> - ${{item.price}}
+        -->
+        <a href="{{ item.get_absolute_url }}">{{item.name}}</a> - ${{item.price}}
+      </li>
+      {% endfor %}
+    </ul>
+    <hr>
+    <p>Showing {{ item_count }} items</p>
+{% endblock %}
