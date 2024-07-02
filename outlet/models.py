@@ -26,7 +26,9 @@ class Category(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True, blank=True, db_index=True)
+    slug = models.SlugField(
+        max_length=255, unique=True, blank=True, db_index=True
+    )
     description = models.TextField()
     category = models.ForeignKey(Category, related_name='items', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
