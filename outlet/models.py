@@ -6,9 +6,10 @@ from django.urls import reverse
 
 # Create your models here.
 
+
 class Category(models.Model):
-    name = models.CharField(max_length=200, unique=True)
-    slug = models.SlugField(max_length=200, unique=True)
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     class Meta:
         ordering = ('name',)
@@ -24,13 +25,46 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
 
+class Subcategory(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.ForeignKey(
+        Category, related_name='subcategories', on_delete=models.CASCADE)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    class Meta:
+        unique_together = ('name', 'category')
+        verbose_name = 'subcategory'
+        verbose_name_plural = 'subcategories'
+
+    def __str__(self):
+        return f"{self.name} ({self.category.name})"
+
+
+class ItemType(models.Model):
+    name = models.CharField(max_length=100)
+    subcategory = models.ForeignKey(
+        Subcategory, related_name='item_types', on_delete=models.CASCADE)
+    slug = models.SlugField(max_length=50, unique=True)
+
+    class Meta:
+        unique_together = ('name', 'subcategory')
+
+    def __str__(self):
+        return f"{self.name} ({self.subcategory.name})"
+
+
 class Item(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(
         max_length=255, unique=True, blank=True, db_index=True
     )
     description = models.TextField()
-    category = models.ForeignKey(Category, related_name='items', on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, 
+        related_name='items', on_delete=models.CASCADE, null=True)
+    subcategory = models.ForeignKey(Subcategory, 
+        related_name='items', on_delete=models.CASCADE, null=True)
+    item_type = models.ForeignKey(ItemType, 
+        related_name='items', on_delete=models.CASCADE, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     available = models.BooleanField(default=True)
@@ -42,6 +76,19 @@ class Item(models.Model):
         ordering = ('name',)
         verbose_name = 'item'
         verbose_name_plural = 'items'
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.subcategory.category != self.category:
+            raise ValidationError(f"Subcategory '{self.subcategory}' does not belong to category '{self.category}'.")
+
+        if self.item_type.subcategory != self.subcategory:
+            raise ValidationError(f"Item type '{self.item_type}' does not belong to subcategory '{self.subcategory}'.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(Item, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} ({self.price})"
@@ -56,8 +103,10 @@ class Item(models.Model):
 
 
 class Review(models.Model):
-    item = models.ForeignKey(Item, related_name='reviews', on_delete=models.CASCADE)
-    user = models.ForeignKey(User, related_name='reviews', on_delete=models.CASCADE)
+    item = models.ForeignKey(
+        Item, related_name='reviews', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name='reviews', on_delete=models.CASCADE)
     review = models.TextField()
     rating = models.PositiveIntegerField(
         validators=[
@@ -76,7 +125,8 @@ class Review(models.Model):
 
 
 class ItemSpecification(models.Model):
-    item = models.ForeignKey(Item, related_name='specifications', on_delete=models.CASCADE)
+    item = models.ForeignKey(
+        Item, related_name='specifications', on_delete=models.CASCADE)
     specification = models.CharField(max_length=255)
 
     def __str__(self):
