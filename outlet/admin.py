@@ -39,18 +39,21 @@ class ItemForm(forms.ModelForm):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name']
     search_fields = ['name']
+    prepopulated_fields = {"slug": ("name",)}
 
 
 class SubcategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'category']
     search_fields = ['name']
     list_filter = ['category']
+    prepopulated_fields = {"slug": ("name",)}
 
 
 class ItemTypeAdmin(admin.ModelAdmin):
     list_display = ['name', 'subcategory']
     search_fields = ['name']
     list_filter = ['subcategory']
+    prepopulated_fields = {"slug": ("name",)}
 
 
 class ItemAdmin(admin.ModelAdmin):
