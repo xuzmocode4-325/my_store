@@ -7,6 +7,32 @@ from django.urls import reverse
 # Create your models here.
 
 
+class Gender(models.Model):
+    name = models.CharField(max_length=10, unique=True)
+    slug = models.SlugField(max_length=10, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class AgeGroup(models.Model):
+    name = models.CharField(max_length=10, unique=True)
+    slug = models.SlugField(max_length=10, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(max_length=50, unique=True)
@@ -19,17 +45,14 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+   
 
 
 class Subcategory(models.Model):
     name = models.CharField(max_length=100)
     category = models.ForeignKey(
         Category, related_name='subcategories', on_delete=models.CASCADE)
-    slug = models.SlugField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
 
     class Meta:
         unique_together = ('name', 'category')
@@ -44,7 +67,7 @@ class ItemType(models.Model):
     name = models.CharField(max_length=100)
     subcategory = models.ForeignKey(
         Subcategory, related_name='item_types', on_delete=models.CASCADE)
-    slug = models.SlugField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
 
     class Meta:
         unique_together = ('name', 'subcategory')
@@ -59,18 +82,26 @@ class Item(models.Model):
         max_length=255, unique=True, db_index=True
     )
     description = models.TextField()
-    category = models.ForeignKey(Category, 
-        related_name='items', on_delete=models.CASCADE, null=True)
-    subcategory = models.ForeignKey(Subcategory, 
-        related_name='items', on_delete=models.CASCADE, null=True)
-    item_type = models.ForeignKey(ItemType, 
-        related_name='items', on_delete=models.CASCADE, null=True)
+    category = models.ForeignKey(Category,
+                                 related_name='items', on_delete=models.CASCADE, default="")
+    subcategory = models.ForeignKey(Subcategory,
+                                    related_name='items', on_delete=models.CASCADE, default="")
+    item_type = models.ForeignKey(ItemType,
+                                  related_name='items', on_delete=models.CASCADE, default="")
+    item_gender = models.ForeignKey(Gender,
+                                  related_name='items', on_delete=models.CASCADE, null=True)
+    item_age_group = models.ForeignKey(AgeGroup,
+                                  related_name='items', on_delete=models.CASCADE, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     available = models.BooleanField(default=True)
+    new_arrival = models.BooleanField(default=False)
+    best_seller = models.BooleanField(default=False)
+    eco_friendly = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     image = models.ImageField(upload_to='products/%Y/%m/%d/', blank=True)
+
 
     class Meta:
         ordering = ('name',)
@@ -81,10 +112,12 @@ class Item(models.Model):
         from django.core.exceptions import ValidationError
 
         if self.subcategory.category != self.category:
-            raise ValidationError(f"Subcategory '{self.subcategory}' does not belong to category '{self.category}'.")
+            raise ValidationError(
+                f"Subcategory '{self.subcategory}' does not belong to category '{self.category}'.")
 
         if self.item_type.subcategory != self.subcategory:
-            raise ValidationError(f"Item type '{self.item_type}' does not belong to subcategory '{self.subcategory}'.")
+            raise ValidationError(
+                f"Item type '{self.item_type}' does not belong to subcategory '{self.subcategory}'.")
 
     def save(self, *args, **kwargs):
         self.clean()

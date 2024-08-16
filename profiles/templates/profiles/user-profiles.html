@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}User Profile{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static "profiles/styles.css" %}"/>
+{% endblock %}
+
+{% block content %}
+    <h1>Users</h1>
+    <ul>
+        {% for profile in profiles %}
+        <li>
+            item
+            <img src="{{ profile.image.url }}">
+        </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
