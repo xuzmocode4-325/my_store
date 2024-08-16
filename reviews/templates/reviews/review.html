@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Your Review{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static "reviews/styles.css" %}"></link>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-control
+                {% if field.errors %}
+                errors
+                {% endif %}
+            ">
+                {{ field.label_tag }}
+                {{ field }}
+                {{ field.errors}}
+            </div>
+        {% endfor %}
+        <button>Send</button>
+    </form>
+{% endblock %}

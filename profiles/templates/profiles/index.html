@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Create Profile{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static "profiles/styles.css" %}"/>
+{% endblock %}
+
+{% block content %}
+    <form 
+        action="/profiles/"
+        method="POST"
+        enctype="multipart/form-data"
+    >
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit">Upload!</button>
+    </form>
+{% endblock %}

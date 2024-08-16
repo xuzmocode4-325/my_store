@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Review Detail{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static "reviews/styles.css" %}"/>
+{% endblock %}
+
+{% block content %}
+    <p>Writtent By: {{ review.user_name }}</p>
+    <p>Date: {{ now|date }}</p>
+    <p>Rating: {{ review.rating }}</p>
+    <p>{{ review.review_text }}</p>
+{% endblock %}
